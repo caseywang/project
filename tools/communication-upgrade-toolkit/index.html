@@ -1,10 +1,22 @@
-
 <!DOCTYPE html>
 <html lang="zh-TW">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>升維溝通工具包</title>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-348BWRYEQM"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+
+        // Only track on the official production domain
+        if (window.location.hostname === 'caseywang.github.io') {
+            gtag('js', new Date());
+            gtag('config', 'G-348BWRYEQM');
+        }
+    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -13,6 +25,7 @@
             background-color: #FFFFFF;
             color: #0F172A;
         }
+
         .glass-card {
             background: rgba(255, 255, 255, 0.8);
             backdrop-filter: blur(8px);
@@ -20,8 +33,8 @@
         }
     </style>
 
-<link rel="stylesheet" href="./index.css">
-<script type="importmap">
+    <link rel="stylesheet" href="./index.css">
+    <script type="importmap">
 {
   "imports": {
     "@google/genai": "https://esm.sh/@google/genai@^1.34.0",
@@ -35,7 +48,9 @@
 </script>
   <script type="module" crossorigin src="/project/tools/communication-upgrade-toolkit/assets/index-DCTBDyl_.js"></script>
 </head>
+
 <body>
     <div id="root"></div>
 </body>
+
 </html>
