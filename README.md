@@ -1,17 +1,17 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# 升維溝通工具包 (Communication Upgrade Toolkit)
 
-# Run and deploy your AI Studio app
+A strategy-led toolkit translating complex insights into structured decision systems.
 
-This contains everything you need to run your app locally.
+This repository serves as a professional portfolio project, showcasing how abstract problems—often encountered in consulting, presales, and data-driven decision contexts—can be reframed into clear, actionable systems.
 
-View your app in AI Studio: https://ai.studio/apps/drive/1nY6QL775btBQUVDeCmhZiK6XuyhEpjbY
+Rather than focusing on individual features or technologies, this project emphasizes:
+- Structured problem framing
+- Decision-oriented system design
+- The translation of insights into repeatable frameworks
 
-## Run Locally
+The tools and frameworks here are designed to support high-stakes decision-making, where clarity, alignment, and execution matter.
 
-**Prerequisites:**  Node.js
-
+## Getting Started
 
 1. Install dependencies:
    `npm install`
