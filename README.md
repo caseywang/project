@@ -11,6 +11,13 @@ Rather than focusing on individual features or technologies, this project emphas
 
 The tools and frameworks here are designed to support high-stakes decision-making, where clarity, alignment, and execution matter.
 
+## Tools
+
+- **Communication Upgrade Toolkit**  
+  A strategy-led toolkit for navigating high-stakes communication scenarios.  
+  → Live demo: https://caseywang.github.io/project/tools/communication-upgrade-toolkit/
+
+
 ## Getting Started
 
 1. Install dependencies:
