@@ -160,12 +160,17 @@ const App: React.FC = () => {
             </button>
 
             <div className="pt-6 border-t border-slate-200">
-              <div className="p-4 bg-white rounded-xl border border-slate-100 flex items-center gap-3">
-                <a href="https://github.com/caseywang/project"><div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center">
-                  <Github className="w-4 h-4" />
-                  <p className="text-slate-400">© 2025 Yiting Wang</p>
-                </div></a>
-              </div>
+              <a
+                href="https://github.com/caseywang/project"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-4 bg-white rounded-xl border border-slate-100 flex items-center gap-3 hover:bg-slate-50 transition-colors group"
+              >
+                <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center shrink-0 group-hover:bg-slate-300 transition-colors">
+                  <Github className="w-4 h-4 text-slate-600" />
+                </div>
+                <p className="text-xs text-slate-400 font-medium">© 2025 Yiting Wang</p>
+              </a>
             </div>
           </div>
         </div>
