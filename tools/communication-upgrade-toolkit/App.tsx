@@ -161,10 +161,10 @@ const App: React.FC = () => {
 
             <div className="pt-6 border-t border-slate-200">
               <div className="p-4 bg-white rounded-xl border border-slate-100 flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center">
-                  <a href="https://github.com/caseywang/project"><Github className="w-4 h-4" /></a>
+                <a href="https://github.com/caseywang/project"><div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center">
+                  <Github className="w-4 h-4" />
                   <p className="text-slate-400">© 2025 Yiting Wang</p>
-                </div>
+                </div></a>
               </div>
             </div>
           </div>
