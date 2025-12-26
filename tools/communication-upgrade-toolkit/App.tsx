@@ -164,12 +164,15 @@ const App: React.FC = () => {
                 href="https://github.com/caseywang/project"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-4 bg-white rounded-xl border border-slate-100 flex items-center gap-3 hover:bg-slate-50 transition-colors group"
+                className="flex items-center gap-3 p-3 bg-white rounded-xl border border-slate-100 hover:bg-slate-50 transition-all group overflow-hidden"
               >
-                <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center shrink-0 group-hover:bg-slate-300 transition-colors">
+                <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center shrink-0 group-hover:bg-slate-200 transition-colors">
                   <Github className="w-4 h-4 text-slate-600" />
                 </div>
-                <p className="text-xs text-slate-400 font-medium">© 2025 Yiting Wang</p>
+                <div className="flex flex-col min-w-0">
+                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tight whitespace-nowrap overflow-hidden text-ellipsis">© 2025 Yiting Wang</p>
+                  <p className="text-[9px] text-indigo-500 font-medium">Project Github</p>
+                </div>
               </a>
             </div>
           </div>
