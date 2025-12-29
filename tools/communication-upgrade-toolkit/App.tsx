@@ -86,7 +86,7 @@ const App: React.FC = () => {
 
   useEffect(() => {
     if (mainContentRef.current) {
-      mainContentRef.current.scrollTop = 0;
+      mainContentRef.current.scrollTo({ top: 0, behavior: 'instant' });
     }
   }, [activeTool]);
 
@@ -187,7 +187,7 @@ const App: React.FC = () => {
       {/* Main Content Area */}
       <main
         ref={mainContentRef}
-        className="flex-1 overflow-y-auto bg-white p-4 md:p-8 lg:p-12 scroll-smooth"
+        className="flex-1 overflow-y-auto bg-white p-4 md:p-8 lg:p-12"
       >
         <div className="max-w-6xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
           {renderActiveTool()}
