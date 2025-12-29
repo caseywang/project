@@ -33,6 +33,11 @@ interface StrategyData {
   };
 }
 
+interface ExternalData {
+  email: string;
+  markdown: string;
+}
+
 const LOADING_STEPS = [
   { text: "正在解構會議逐字稿內容...", icon: <MessageSquare className="w-4 h-4" /> },
   { text: "正在建立權力關係地圖 (Political Mapping)...", icon: <Users className="w-4 h-4" /> },
@@ -48,11 +53,12 @@ const IntelligenceCard: React.FC<IntelligenceCardProps> = ({ model = 'gemini-3-f
 
   const [strategyData, setStrategyData] = useState<StrategyData | null>(null);
   const [internalTextForCopy, setInternalTextForCopy] = useState('');
-  const [externalMinutes, setExternalMinutes] = useState('');
+  const [externalData, setExternalData] = useState<ExternalData | null>(null);
 
   const [isLoading, setIsLoading] = useState(false);
   const [loadingStep, setLoadingStep] = useState(0);
   const [activeView, setActiveView] = useState<'internal' | 'external'>('internal');
+  const [activeExternalTab, setActiveExternalTab] = useState<'email' | 'markdown'>('email');
   const [copiedType, setCopiedType] = useState<'internal' | 'email' | 'markdown' | null>(null);
 
   useEffect(() => {
@@ -70,7 +76,7 @@ const IntelligenceCard: React.FC<IntelligenceCardProps> = ({ model = 'gemini-3-f
     if (!transcript.trim()) return;
     setIsLoading(true);
     setStrategyData(null);
-    setExternalMinutes('');
+    setExternalData(null);
 
     const today = new Date().toLocaleDateString('zh-TW', {
       year: 'numeric',
@@ -92,21 +98,56 @@ const IntelligenceCard: React.FC<IntelligenceCardProps> = ({ model = 'gemini-3-f
           contents: internalPrompt,
           config: { responseMimeType: "application/json" }
         }),
-        ai.models.generateContent({ model: model, contents: externalPrompt })
+        ai.models.generateContent({
+          model: model,
+          contents: externalPrompt,
+          config: { responseMimeType: "application/json" }
+        })
       ]);
 
       try {
-        const jsonText = resInternal.text || "{}";
+        const jsonText = cleanJsonString(resInternal.text || "{}");
         const parsedData: StrategyData = JSON.parse(jsonText);
         setStrategyData(parsedData);
 
         const situationText = parsedData.political.situationType === 'Marketing' ? '行銷主導' : parsedData.political.situationType === 'Tech' ? '技術主導' : '業務主導';
-        const readableText = `🔒 戰略情報紀錄表 (${parsedData.meetingDate})\n專案：${parsedData.projectName}\n局勢：${situationText}\n地雷：${parsedData.risks.landmines}`;
-        setInternalTextForCopy(readableText);
+
+        const fullMarkdown = `
+# 🔒 戰略情報紀錄表 (${parsedData.meetingDate})
+
+## 專案定義
+**專案名稱**：${parsedData.projectName}
+
+## 1. 權力與局勢 (Political Map)
+- **決策者 (Budget Owner)**：${parsedData.political.decisionMaker.name} (${parsedData.political.decisionMaker.title})
+  - *焦點*：${parsedData.political.decisionMaker.caresAbout}
+- **關鍵影響者**：${parsedData.political.influencer.name} (${parsedData.political.influencer.title})
+  - *動向*：${parsedData.political.influencer.attitude}
+  - *狀態*：${parsedData.political.influencer.isAlly ? '✅ 友軍' : '⚠️ 非友軍'}
+- **目前局勢**：${situationText}
+
+## 2. 風險掃描 (Risk Assessment)
+- **🛑 地雷區**：${parsedData.risks.landmines}
+- **📉 隱形成本**：${parsedData.risks.hiddenCosts}
+
+## 3. 作戰策略 (Action Plan)
+- **模式**：${parsedData.strategy.role === 'Consultant' ? '顧問模式' : '執行模式'}
+- **行動清單**：
+${parsedData.strategy.actions.map((action, i) => `  ${i + 1}. [${action.owner}] ${action.task}`).join('\n')}
+        `.trim();
+
+        setInternalTextForCopy(fullMarkdown);
       } catch (e) {
         console.error(e);
       }
-      setExternalMinutes(resExternal.text || '分析失敗');
+
+      try {
+        const extJsonText = cleanJsonString(resExternal.text || "{}");
+        const parsedExtData: ExternalData = JSON.parse(extJsonText);
+        setExternalData(parsedExtData);
+      } catch (e) {
+        console.error("External Minute Parse Error:", e);
+      }
     } catch (error: any) {
       console.error(error);
       if (error.message?.includes("Requested entity was not found") || error.message?.includes("API key")) {
@@ -117,22 +158,21 @@ const IntelligenceCard: React.FC<IntelligenceCardProps> = ({ model = 'gemini-3-f
     }
   };
 
+  const cleanJsonString = (str: string) => {
+    return str.replace(/```json\n?|\n?```/g, '').trim();
+  };
+
   const handleCopy = (text: string, type: 'internal' | 'email' | 'markdown') => {
     if (!text) return;
-
-    let contentToCopy = text;
-    if (type === 'email') {
-      contentToCopy = text
-        .replace(/(\*\*|__)/g, '')
-        .replace(/^(#+)\s+/gm, '')
-        .replace(/`([^`]+)`/g, '$1')
-        .replace(/^\s*-\s+/gm, '• ');
-    }
-
-    navigator.clipboard.writeText(contentToCopy);
+    navigator.clipboard.writeText(text);
     setCopiedType(type);
     setTimeout(() => setCopiedType(null), 2000);
   };
+
+  const sysKey = (process.env as any).API_KEY;
+  const effectiveKey = apiKey || (sysKey !== 'undefined' ? sysKey : '');
+  const verifiedKey = localStorage.getItem('gemini_api_verified_key');
+  const isOperational = !!(effectiveKey && effectiveKey === verifiedKey);
 
   return (
     <div className="space-y-8">
@@ -142,6 +182,7 @@ const IntelligenceCard: React.FC<IntelligenceCardProps> = ({ model = 'gemini-3-f
         insight="Before analysis, clarify your position: Are you reacting, or repositioning?"
         description="AI 即時解構會議逐字稿，將對話轉換為「戰略作戰地圖」。"
         engine={model}
+        isOperational={isOperational}
       />
 
       {/* Input Section */}
@@ -218,39 +259,7 @@ const IntelligenceCard: React.FC<IntelligenceCardProps> = ({ model = 'gemini-3-f
 
           <div className="flex-1 bg-white border border-slate-200 rounded-[2.5rem] shadow-2xl shadow-slate-200/40 overflow-hidden relative flex flex-col">
 
-            {/* 動態複製按鈕工具列 */}
-            {!isLoading && (
-              <div className="absolute top-6 right-6 z-30 flex gap-2">
-                {activeView === 'internal' && strategyData && (
-                  <button
-                    onClick={() => handleCopy(internalTextForCopy, 'internal')}
-                    className="px-4 py-2 bg-white/90 backdrop-blur border border-slate-200 rounded-xl text-xs font-bold text-slate-600 flex items-center gap-2 shadow-sm hover:border-indigo-500 transition-all"
-                  >
-                    {copiedType === 'internal' ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
-                    {copiedType === 'internal' ? '已複製情報' : '複製文字'}
-                  </button>
-                )}
 
-                {activeView === 'external' && externalMinutes && (
-                  <>
-                    <button
-                      onClick={() => handleCopy(externalMinutes, 'email')}
-                      className="px-4 py-2 bg-indigo-600 text-white border border-indigo-700 rounded-xl text-xs font-bold flex items-center gap-2 shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all"
-                    >
-                      {copiedType === 'email' ? <Check className="w-4 h-4" /> : <Mail className="w-4 h-4" />}
-                      {copiedType === 'email' ? '已複製 Email 格式' : '複製 Email 內容'}
-                    </button>
-                    <button
-                      onClick={() => handleCopy(externalMinutes, 'markdown')}
-                      className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-600 flex items-center gap-2 shadow-sm hover:border-slate-400 transition-all"
-                    >
-                      {copiedType === 'markdown' ? <Check className="w-4 h-4 text-emerald-500" /> : <Hash className="w-4 h-4 text-slate-400" />}
-                      {copiedType === 'markdown' ? '已複製 MD 格式' : 'Markdown'}
-                    </button>
-                  </>
-                )}
-              </div>
-            )}
 
             {/* Loading Overlay */}
             {isLoading && (
@@ -292,9 +301,15 @@ const IntelligenceCard: React.FC<IntelligenceCardProps> = ({ model = 'gemini-3-f
                             <p className="text-[10px] text-slate-400 font-bold tracking-[0.2em] uppercase">INTERNAL CONFIDENTIAL</p>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <div className="text-sm font-black text-indigo-400 mb-1">{strategyData.meetingDate}</div>
-                          <div className="text-[10px] font-bold text-slate-500 flex items-center gap-1 justify-end">
+                        <div className="text-right flex flex-col items-end gap-2">
+                          <button
+                            onClick={() => handleCopy(internalTextForCopy, 'internal')}
+                            className="px-3 py-1.5 bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-200 hover:text-white rounded-lg text-[10px] font-bold flex items-center gap-1.5 transition-all border border-indigo-500/30"
+                          >
+                            {copiedType === 'internal' ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                            {copiedType === 'internal' ? '已複製情報' : '複製完整戰報'}
+                          </button>
+                          <div className="text-[10px] font-bold text-slate-500 flex items-center gap-1 mt-1">
                             <ShieldCheck className="w-3 h-3" /> SECURE ANALYSIS
                           </div>
                         </div>
@@ -395,22 +410,52 @@ const IntelligenceCard: React.FC<IntelligenceCardProps> = ({ model = 'gemini-3-f
                   <EmptyPlaceholder icon={<Lock className="w-16 h-16" />} text="請在左側貼入逐字稿，啟動「戰略情報分析引擎」" />
                 )
               ) : (
-                externalMinutes ? (
+                externalData ? (
                   <div className="p-10 animate-in fade-in slide-in-from-bottom-4 duration-700 h-full flex flex-col">
-                    <div className="flex items-center gap-3 mb-8 pb-4 border-b border-slate-100">
-                      <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600"><Mail className="w-5 h-5" /></div>
-                      <div>
-                        <h4 className="font-black text-slate-800">外部會議紀錄</h4>
-                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Professional Client Memo</p>
+                    <div className="flex items-center justify-between mb-8 pb-4 border-b border-slate-100">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600">
+                          {activeExternalTab === 'email' ? <Mail className="w-5 h-5" /> : <Hash className="w-5 h-5" />}
+                        </div>
+                        <div>
+                          <h4 className="font-black text-slate-800">
+                            {activeExternalTab === 'email' ? '對外Email' : '內部紀錄'}
+                          </h4>
+                          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+                            {activeExternalTab === 'email' ? 'Professional Client Memo' : 'Internal Knowledge Base'}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <div className="flex bg-slate-100 p-1 rounded-xl">
+                          <button
+                            onClick={() => setActiveExternalTab('email')}
+                            className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all ${activeExternalTab === 'email' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                          >
+                            Email
+                          </button>
+                          <button
+                            onClick={() => setActiveExternalTab('markdown')}
+                            className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all ${activeExternalTab === 'markdown' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>
+                            Markdown
+                          </button>
+                        </div>
+                        <button
+                          onClick={() => handleCopy(activeExternalTab === 'email' ? externalData.email : externalData.markdown, activeExternalTab)}
+                          className="px-4 py-2 bg-indigo-600 text-white border border-indigo-700 rounded-xl text-xs font-bold flex items-center gap-2 shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all"
+                        >
+                          {copiedType === activeExternalTab ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                          {copiedType === activeExternalTab ? '已複製' : (activeExternalTab === 'email' ? '複製 Email 本文' : '複製 Markdown 格式')}
+                        </button>
                       </div>
                     </div>
                     <div className="flex-1 whitespace-pre-wrap font-sans text-slate-700 leading-relaxed text-sm select-all">
-                      {externalMinutes}
+                      {activeExternalTab === 'email' ? externalData.email : externalData.markdown}
                     </div>
                     <div className="mt-6 p-4 bg-indigo-50 rounded-2xl border border-indigo-100 flex items-center gap-3">
                       <Info className="w-4 h-4 text-indigo-600 flex-shrink-0" />
                       <p className="text-[11px] text-indigo-800/70 leading-relaxed font-medium">
-                        提示：點擊右上角「複製 Email 內容」將自動去除 Markdown 符號與加重號，確保在 Gmail 中的排版純淨專業。
+                        提示：系統已根據用途自動生成「Email 內容」與「Markdown 格式」。Email 版已去除了 Markdown 標籤並優化商務語氣，適合直接貼入 Gmail。
                       </p>
                     </div>
                   </div>

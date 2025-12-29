@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
+    "dev": "cd tools/communication-upgrade-toolkit && npm run dev",
     "build:toolkit": "cd tools/communication-upgrade-toolkit && npm run build",
     "build": "rm -rf dist && mkdir -p dist/tools/communication-upgrade-toolkit && npm run build:toolkit && cp -r tools/communication-upgrade-toolkit/dist/* dist/tools/communication-upgrade-toolkit/ && cp index.html dist/",
     "deploy": "npm run build && gh-pages -d dist"

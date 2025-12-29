@@ -7,6 +7,7 @@ interface PageHeaderProps {
     insight: string;
     tag?: string;
     engine?: string;
+    isOperational?: boolean;
     children?: React.ReactNode;
 }
 
@@ -16,6 +17,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({
     insight,
     tag,
     engine,
+    isOperational = false,
     children
 }) => {
     return (
@@ -51,8 +53,10 @@ const PageHeader: React.FC<PageHeaderProps> = ({
                                     Engine: {engine}
                                 </span>
                                 <div className="flex items-center gap-2">
-                                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                                    <span className="text-xs font-bold text-slate-600 uppercase tracking-tighter">Strategic Core Ready</span>
+                                    <div className={`w-2 h-2 rounded-full animate-pulse ${isOperational ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+                                    <span className={`text-xs font-bold uppercase tracking-tighter ${isOperational ? 'text-slate-600' : 'text-rose-500'}`}>
+                                        {isOperational ? 'Strategic Core Ready' : 'Engine Offline / Key Missing'}
+                                    </span>
                                 </div>
                             </div>
                         )}

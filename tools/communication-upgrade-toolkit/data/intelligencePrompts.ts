@@ -28,11 +28,27 @@ export const GET_INTERNAL_PROMPT = (transcript: string, internalTeam: string, cl
       ${transcript}`;
 
 export const GET_EXTERNAL_PROMPT = (transcript: string, internalTeam: string, clientName: string) => `
-請將逐字稿轉化為一份專業的「會議紀錄 (Meeting Minutes)」內容，語氣專業且精簡。
-- 發言方：${internalTeam}
-- 接收方：${clientName}
-- 語言：台灣商務繁體中文 (必要時加註英文術語)
-- 格式要求：請使用適量的 Markdown 標註（標題用 #，重點用 **），包含主旨、出席人員、會議重點、與後續待辦事項。
+你是一位精通商務溝通與客戶關係管理的專業顧問。請將下方的會議逐字稿內容，轉化為以下「兩種截然不同」的紀錄格式：
 
-逐字稿：
+1. **Email 內容 (可以直接給客戶的文本)**：
+   - 目標：發送給客戶（${clientName}），旨在總結共識與確認下一步（Next Steps）。
+   - 語氣：台灣商務專業且謙和，使用點列式 (Bullet Points) 呈現。
+   - 限制：**嚴禁使用 Markdown 標記** (如 #, **, \` \`)，請使用純文字符號如 "●" 或 "-" 作為列表符號。
+   - 包含：主旨 (SubjectLine)、親切問候、會議重點總結、待辦事項、結尾。
+
+2. **Markdown 紀錄格式 (內部存檔用)**：
+   - 目標：用於公司內部知識庫存檔，需具備高度的可檢索性與結構。
+   - 格式：使用豐富的 Markdown 語法 (Level 1-3 Headings, Checkboxes, Bold text)。
+   - 包含：專案背景、會議參與者、詳細討論要點、決策紀錄、後續行動清單 (含 Owner/Deadline)。
+
+【輸出限制：純 JSON (不含 Markdown Code Blocks)】
+{
+  "email": "Email 內容文本...",
+  "markdown": "Markdown 紀錄文本..."
+}
+
+發言方：${internalTeam}
+接收方：${clientName}
+
+會議逐字稿：
 ${transcript}`;

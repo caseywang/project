@@ -10,7 +10,8 @@ import {
   ChevronRight,
   Github,
   Settings as SettingsIcon,
-  Target
+  Target,
+  MessagesSquare
 } from 'lucide-react';
 import { ToolType, NavItem } from './types';
 import StrategyMatrix from './components/StrategyMatrix';
@@ -19,12 +20,14 @@ import EmailTemplates from './components/EmailTemplates';
 import PromptLibrary from './components/PromptLibrary';
 import Settings from './components/Settings';
 import Home from './components/Home';
+import SubtextDecoder from './components/SubtextDecoder';
 
 const NAV_ITEMS: NavItem[] = [
   { id: ToolType.HOME, label: '工具首頁', icon: <Compass className="w-5 h-5" /> },
   { id: ToolType.STRATEGY_MATRIX, label: '3R 戰略導航圖', icon: <Target className="w-5 h-5" /> },
   { id: ToolType.EMAIL_TEMPLATES, label: '外部溝通模組', icon: <Mail className="w-5 h-5" /> },
   { id: ToolType.INTELLIGENCE_CARD, label: '內部情報卡', icon: <FileText className="w-5 h-5" /> },
+  { id: ToolType.SUBTEXT_DECODER, label: '潛臺詞翻譯機', icon: <MessagesSquare className="w-5 h-5" /> },
   { id: ToolType.AI_PROMPTS, label: 'AI 賦能指令庫', icon: <Cpu className="w-5 h-5" /> },
 ];
 
@@ -63,6 +66,8 @@ const App: React.FC = () => {
         return <EmailTemplates />;
       case ToolType.AI_PROMPTS:
         return <PromptLibrary model={selectedModel} apiKey={apiKey} />;
+      case ToolType.SUBTEXT_DECODER:
+        return <SubtextDecoder model={selectedModel} apiKey={apiKey} />;
       case ToolType.SETTINGS:
         return (
           <Settings

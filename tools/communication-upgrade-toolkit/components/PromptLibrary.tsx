@@ -88,6 +88,11 @@ const PromptLibrary: React.FC<PromptLibraryProps> = ({ model = 'gemini-3-flash-p
     }
   };
 
+  const sysKey = (process.env as any).API_KEY;
+  const effectiveKey = apiKey || (sysKey !== 'undefined' ? sysKey : '');
+  const verifiedKey = localStorage.getItem('gemini_api_verified_key');
+  const isOperational = !!(effectiveKey && effectiveKey === verifiedKey);
+
   return (
     <div className="space-y-8">
       <PageHeader
@@ -96,6 +101,7 @@ const PromptLibrary: React.FC<PromptLibraryProps> = ({ model = 'gemini-3-flash-p
         insight="Before running prompts, clarify your position: Are you reacting, or repositioning?"
         description="將溝通從單純的「訊息傳遞」升級為「顧問式諮詢」。"
         engine={model}
+        isOperational={isOperational}
       >
         <div className="flex items-center gap-2 px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full border border-indigo-100 mt-2">
           <Sparkles className="w-3 h-3" />
