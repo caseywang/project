@@ -3,14 +3,16 @@ import React, { useState, useRef, useEffect } from 'react';
 import {
   Cpu, Zap, Copy, Check, Sparkles, MessageSquare, BrainCircuit,
   Lightbulb, ClipboardCheck, Mail, PencilLine, Info,
-  ShieldCheck, MessageCircle, BarChart3, Target, Presentation
+  ShieldCheck, MessageCircle, BarChart3, Target, Presentation, AlertCircle
 } from 'lucide-react';
 import { GoogleGenAI } from "@google/genai";
 import PageHeader from './PageHeader';
+import { ToolType } from '../types';
 
 interface PromptLibraryProps {
   model?: string;
   apiKey?: string;
+  onNavigate?: (tool: any) => void;
 }
 
 interface StructuredResponse {
@@ -20,7 +22,7 @@ interface StructuredResponse {
 
 import { PROMPT_TEMPLATES } from '../data/prompts';
 
-const PromptLibrary: React.FC<PromptLibraryProps> = ({ model = 'gemini-3-flash-preview', apiKey }) => {
+const PromptLibrary: React.FC<PromptLibraryProps> = ({ model = 'gemini-3-flash-preview', apiKey, onNavigate }) => {
   const [copiedResult, setCopiedResult] = useState(false);
   const [userInput, setUserInput] = useState('');
   const [structuredResponse, setStructuredResponse] = useState<StructuredResponse | null>(null);
@@ -42,6 +44,14 @@ const PromptLibrary: React.FC<PromptLibraryProps> = ({ model = 'gemini-3-flash-p
 
   const handleRunAi = async () => {
     if (!userInput.trim()) return;
+    if (!apiKey) {
+      if (onNavigate) {
+        onNavigate(ToolType.SETTINGS);
+      } else {
+        alert("請前往「系統設定」輸入您的 API Key。");
+      }
+      return;
+    }
     setIsLoading(true);
     setStructuredResponse(null);
     setRawResponse('');
@@ -102,6 +112,7 @@ const PromptLibrary: React.FC<PromptLibraryProps> = ({ model = 'gemini-3-flash-p
         description="將溝通從單純的「訊息傳遞」升級為「顧問式諮詢」。"
         engine={model}
         isOperational={isOperational}
+        onStatusClick={onNavigate ? () => onNavigate(ToolType.SETTINGS) : undefined}
       >
         <div className="flex items-center gap-2 px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full border border-indigo-100 mt-2">
           <Sparkles className="w-3 h-3" />
@@ -168,7 +179,7 @@ const PromptLibrary: React.FC<PromptLibraryProps> = ({ model = 'gemini-3-flash-p
                     absolute bottom-4 right-4 px-8 py-3 rounded-xl flex items-center gap-2 font-black shadow-xl transition-all
                     ${isLoading || !userInput.trim()
                       ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                      : 'bg-indigo-600 text-white hover:bg-indigo-700 hover:shadow-indigo-200'}
+                      : apiKey ? 'bg-indigo-600 text-white hover:bg-indigo-700 hover:shadow-indigo-200' : 'bg-amber-100 text-amber-600 hover:bg-amber-200 shadow-none'}
                   `}
                 >
                   {isLoading ? (
@@ -176,6 +187,11 @@ const PromptLibrary: React.FC<PromptLibraryProps> = ({ model = 'gemini-3-flash-p
                       <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                       戰略運算中...
                     </div>
+                  ) : !apiKey ? (
+                    <>
+                      <AlertCircle className="w-4 h-4" />
+                      尚未設定 API Key (點擊前往設定)
+                    </>
                   ) : (
                     <>
                       <Zap className="w-4 h-4" />

@@ -19,9 +19,10 @@ import { ToolType } from '../types';
 
 interface HomeProps {
     onStart: (tool: ToolType) => void;
+    apiKey: string;
 }
 
-const Home: React.FC<HomeProps> = ({ onStart }) => {
+const Home: React.FC<HomeProps> = ({ onStart, apiKey }) => {
     return (
         <div className="max-w-5xl mx-auto space-y-24 py-12 px-4 animate-in fade-in duration-1000">
             {/* ① Landing / Tool Home */}
@@ -70,6 +71,29 @@ const Home: React.FC<HomeProps> = ({ onStart }) => {
                     </div>
                 </div>
             </header>
+
+            {/* API Setup Callout (If missing) */}
+            {!apiKey && (
+                <div className="max-w-4xl mx-auto p-8 bg-gradient-to-br from-slate-900 to-indigo-900 rounded-[2.5rem] text-white relative overflow-hidden shadow-2xl shadow-indigo-200 group">
+                    <div className="absolute -right-10 -bottom-10 opacity-10 group-hover:rotate-12 transition-transform duration-700">
+                        <Cpu className="w-64 h-64" />
+                    </div>
+                    <div className="relative z-10 flex flex-col md:flex-row items-center gap-8">
+                        <div className="flex-1 space-y-4 text-center md:text-left">
+                            <h3 className="text-2xl font-black tracking-tight">啟動 AI 戰略引擎</h3>
+                            <p className="text-slate-300 text-sm leading-relaxed max-w-xl">
+                                目前尚未配置 API 金鑰。為了使用「潛臺詞翻譯機」、「內部情報卡」與「策略指令庫」，請先前往設定輸入您的 Google Gemini API Key。
+                            </p>
+                        </div>
+                        <button
+                            onClick={() => onStart(ToolType.SETTINGS)}
+                            className="px-8 py-4 bg-white text-slate-900 rounded-2xl font-black text-sm hover:bg-indigo-50 transition-all flex items-center gap-2 shrink-0 shadow-xl"
+                        >
+                            立刻前往設定 <ArrowRight className="w-4 h-4" />
+                        </button>
+                    </div>
+                </div>
+            )}
 
             {/* ② Core Tool / Scenario Selector */}
             <section className="space-y-12">

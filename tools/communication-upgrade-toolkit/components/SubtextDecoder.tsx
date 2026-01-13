@@ -4,13 +4,15 @@ import { Search, Info, MessageSquare, AlertCircle, CheckCircle2, Copy, Sparkles,
 import { GoogleGenAI } from "@google/genai";
 import PageHeader from './PageHeader';
 import { DECODER_DATA, AI_TRANSLATOR_PROMPT, PERSONA_LIBRARY } from '../data/decoderData';
+import { ToolType } from '../types';
 
 interface SubtextDecoderProps {
     model?: string;
     apiKey?: string;
+    onNavigate?: (tool: any) => void;
 }
 
-const SubtextDecoder: React.FC<SubtextDecoderProps> = ({ model = 'gemini-3-flash-preview', apiKey }) => {
+const SubtextDecoder: React.FC<SubtextDecoderProps> = ({ model = 'gemini-3-flash-preview', apiKey, onNavigate }) => {
     const parseConsultant = (text: string) => {
         const match = text.match(/^(.*)\s*[\(（]([^）\)]+)[\)）]$/);
         if (match) {
@@ -89,7 +91,11 @@ const SubtextDecoder: React.FC<SubtextDecoderProps> = ({ model = 'gemini-3-flash
     const handleAiTranslate = async () => {
         if (!customQuestion.trim()) return;
         if (!apiKey) {
-            alert('請先在設定中輸入 API Key');
+            if (onNavigate) {
+                onNavigate(ToolType.SETTINGS);
+            } else {
+                alert('請先在設定中輸入 API Key');
+            }
             return;
         }
 
@@ -128,6 +134,7 @@ const SubtextDecoder: React.FC<SubtextDecoderProps> = ({ model = 'gemini-3-flash
                 description="客戶說出來的話往往只是冰山一角。透過標籤精準定位客戶人設，獲得客製化的戰略回擊建議。"
                 engine={model}
                 isOperational={isOperational}
+                onStatusClick={onNavigate ? () => onNavigate(ToolType.SETTINGS) : undefined}
             />
 
             {/* Grid of Interactive Cards (The Gallery) */}
@@ -372,11 +379,11 @@ const SubtextDecoder: React.FC<SubtextDecoderProps> = ({ model = 'gemini-3-flash
                         <div className="pt-4">
                             <button
                                 onClick={handleAiTranslate}
-                                disabled={isLoading || !apiKey}
-                                className={`w-full py-4 rounded-2xl font-black text-sm flex items-center justify-center gap-3 transition-all shadow-xl disabled:opacity-50 ${apiKey ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-100' : 'bg-slate-100 text-slate-400 cursor-not-allowed shadow-none'}`}
+                                disabled={isLoading}
+                                className={`w-full py-4 rounded-2xl font-black text-sm flex items-center justify-center gap-3 transition-all shadow-xl ${apiKey ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-100' : 'bg-amber-100 text-amber-600 hover:bg-amber-200 shadow-none'}`}
                             >
                                 {isLoading ? <BrainCircuit className="w-5 h-5 animate-spin" /> : apiKey ? <Send className="w-5 h-5" /> : <AlertCircle className="w-5 h-5" />}
-                                {isLoading ? '正在解碼專家回覆...' : apiKey ? '啟動 AI 即時翻譯' : '請先至設定填寫 API Key'}
+                                {isLoading ? '正在解碼專家回覆...' : apiKey ? '啟動 AI 即時翻譯' : '尚未設定 API Key (點擊前往設定)'}
                             </button>
                         </div>
                     </div>

@@ -21,6 +21,7 @@ import PromptLibrary from './components/PromptLibrary';
 import Settings from './components/Settings';
 import Home from './components/Home';
 import SubtextDecoder from './components/SubtextDecoder';
+import ApiStatusBanner from './components/ApiStatusBanner';
 
 const NAV_ITEMS: NavItem[] = [
   { id: ToolType.HOME, label: '工具首頁', icon: <Compass className="w-5 h-5" /> },
@@ -57,17 +58,17 @@ const App: React.FC = () => {
   const renderActiveTool = () => {
     switch (activeTool) {
       case ToolType.HOME:
-        return <Home onStart={setActiveTool} />;
+        return <Home onStart={setActiveTool} apiKey={apiKey} />;
       case ToolType.STRATEGY_MATRIX:
         return <StrategyMatrix />;
       case ToolType.INTELLIGENCE_CARD:
-        return <IntelligenceCard model={selectedModel} apiKey={apiKey} />;
+        return <IntelligenceCard model={selectedModel} apiKey={apiKey} onNavigate={setActiveTool} />;
       case ToolType.EMAIL_TEMPLATES:
         return <EmailTemplates />;
       case ToolType.AI_PROMPTS:
-        return <PromptLibrary model={selectedModel} apiKey={apiKey} />;
+        return <PromptLibrary model={selectedModel} apiKey={apiKey} onNavigate={setActiveTool} />;
       case ToolType.SUBTEXT_DECODER:
-        return <SubtextDecoder model={selectedModel} apiKey={apiKey} />;
+        return <SubtextDecoder model={selectedModel} apiKey={apiKey} onNavigate={setActiveTool} />;
       case ToolType.SETTINGS:
         return (
           <Settings
@@ -78,7 +79,7 @@ const App: React.FC = () => {
           />
         );
       default:
-        return <Home onStart={setActiveTool} />;
+        return <Home onStart={setActiveTool} apiKey={apiKey} />;
     }
   };
 
@@ -190,6 +191,9 @@ const App: React.FC = () => {
         className="flex-1 overflow-y-auto bg-white p-4 md:p-8 lg:p-12"
       >
         <div className="max-w-6xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
+          {activeTool !== ToolType.HOME && activeTool !== ToolType.SETTINGS && (
+            <ApiStatusBanner apiKey={apiKey} onNavigateToSettings={setActiveTool} />
+          )}
           {renderActiveTool()}
         </div>
       </main>

@@ -67,8 +67,12 @@ const Settings: React.FC<SettingsProps> = ({ currentModel, onModelChange, apiKey
   };
 
   const handleTestConnection = async () => {
-    const sysKey = process.env.API_KEY;
-    const effectiveKey = localKey || (sysKey !== 'undefined' ? sysKey : '');
+    let sysKey = '';
+    try {
+      sysKey = (process.env as any)?.API_KEY;
+    } catch (e) { }
+
+    const effectiveKey = localKey || (sysKey && sysKey !== 'undefined' ? sysKey : '');
 
     if (!effectiveKey || effectiveKey.trim() === '') {
       setTestResult('error');
@@ -79,22 +83,28 @@ const Settings: React.FC<SettingsProps> = ({ currentModel, onModelChange, apiKey
     setTestResult(null);
 
     try {
-      // 嘗試建立 API 物件並進行基本格式檢查
-      // 在實際環境中，若要更精確可以呼叫一個輕量級 API
       const ai = new GoogleGenAI({ apiKey: effectiveKey });
 
-      // 模擬 API 延遲與真實檢查
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // 進行一個極其微小的實體請求來驗證金鑰有效性
+      // 使用當前選擇的模型進行測試，確保該金鑰具備對應權限
+      const response = await ai.models.generateContent({
+        model: currentModel || "gemini-1.5-flash",
+        contents: [{ role: 'user', parts: [{ text: 'hi' }] }],
+        config: { maxOutputTokens: 1 }
+      });
 
-      // 這裡檢查金鑰格式（通常以 AIza 開頭）
-      if (!effectiveKey.startsWith('AIza')) {
-        throw new Error('Invalid Key Format');
+      // 只要能拿到回應，代表金鑰有效
+      if (response) {
+        setTestResult('success');
+        localStorage.setItem('gemini_api_verified_key', effectiveKey);
+      } else {
+        throw new Error('No Response');
       }
-
-      setTestResult('success');
-      localStorage.setItem('gemini_api_verified_key', effectiveKey);
     } catch (err) {
+      console.error('API Verification Failed:', err);
       setTestResult('error');
+      // 如果測試失敗，清除已驗證的金鑰紀錄，確保 UI 狀態同步
+      localStorage.removeItem('gemini_api_verified_key');
     } finally {
       setIsTesting(false);
     }
@@ -227,10 +237,14 @@ const Settings: React.FC<SettingsProps> = ({ currentModel, onModelChange, apiKey
 
             <div className="space-y-4">
               {(() => {
-                const sysKey = process.env.API_KEY;
+                let sysKey = '';
+                try {
+                  sysKey = (process.env as any)?.API_KEY;
+                } catch (e) { }
+
                 const hasSysKey = sysKey && sysKey !== 'undefined' && sysKey !== '';
                 const hasUserKey = apiKey && apiKey.trim() !== '';
-                const currentKey = localKey || (sysKey !== 'undefined' ? sysKey : '');
+                const currentKey = localKey || (hasSysKey ? sysKey : '');
                 const verifiedKey = localStorage.getItem('gemini_api_verified_key');
                 const isOperational = !!(currentKey && currentKey === verifiedKey);
 

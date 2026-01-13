@@ -8,6 +8,7 @@ interface PageHeaderProps {
     tag?: string;
     engine?: string;
     isOperational?: boolean;
+    onStatusClick?: () => void;
     children?: React.ReactNode;
 }
 
@@ -18,6 +19,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({
     tag,
     engine,
     isOperational = false,
+    onStatusClick,
     children
 }) => {
     return (
@@ -52,12 +54,16 @@ const PageHeader: React.FC<PageHeaderProps> = ({
                                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 text-right">
                                     Engine: {engine}
                                 </span>
-                                <div className="flex items-center gap-2">
+                                <button
+                                    onClick={onStatusClick}
+                                    disabled={!onStatusClick}
+                                    className={`flex items-center gap-2 transition-all ${onStatusClick ? 'hover:opacity-70' : 'cursor-default'}`}
+                                >
                                     <div className={`w-2 h-2 rounded-full animate-pulse ${isOperational ? 'bg-emerald-500' : 'bg-rose-500'}`} />
                                     <span className={`text-xs font-bold uppercase tracking-tighter ${isOperational ? 'text-slate-600' : 'text-rose-500'}`}>
                                         {isOperational ? 'Strategic Core Ready' : 'Engine Offline / Key Missing'}
                                     </span>
-                                </div>
+                                </button>
                             </div>
                         )}
                         {children}

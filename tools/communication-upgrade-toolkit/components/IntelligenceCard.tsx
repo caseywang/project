@@ -3,15 +3,17 @@ import React, { useState, useEffect } from 'react';
 import {
   Copy, Check, FileSearch, Users, ShieldAlert, Zap, Globe, Sparkles,
   MessageSquare, FileText, Lock, Crown, Megaphone, TrendingUp, AlertTriangle, ListTodo, Calendar, Building2, User,
-  LayoutDashboard, UserCheck, AlertOctagon, Briefcase, Loader2, Radar, ShieldCheck, Activity, Mail, Hash, Info
+  LayoutDashboard, UserCheck, AlertOctagon, Briefcase, Loader2, Radar, ShieldCheck, Activity, Mail, Hash, Info, AlertCircle
 } from 'lucide-react';
 import { GoogleGenAI } from "@google/genai";
 import PageHeader from './PageHeader';
 import { GET_INTERNAL_PROMPT, GET_EXTERNAL_PROMPT } from '../data/intelligencePrompts';
+import { ToolType } from '../types';
 
 interface IntelligenceCardProps {
   model?: string;
   apiKey?: string;
+  onNavigate?: (tool: any) => void;
 }
 
 // 定義符合新 UI 的結構化資料介面
@@ -46,7 +48,7 @@ const LOADING_STEPS = [
   { text: "正在進行商務語言校準 (Localization)...", icon: <Globe className="w-4 h-4" /> }
 ];
 
-const IntelligenceCard: React.FC<IntelligenceCardProps> = ({ model = 'gemini-3-flash-preview', apiKey }) => {
+const IntelligenceCard: React.FC<IntelligenceCardProps> = ({ model = 'gemini-3-flash-preview', apiKey, onNavigate }) => {
   const [transcript, setTranscript] = useState('');
   const [internalTeam, setInternalTeam] = useState('CloudAD 雲數位');
   const [clientName, setClientName] = useState('');
@@ -74,6 +76,14 @@ const IntelligenceCard: React.FC<IntelligenceCardProps> = ({ model = 'gemini-3-f
 
   const handleAnalyze = async () => {
     if (!transcript.trim()) return;
+    if (!apiKey) {
+      if (onNavigate) {
+        onNavigate(ToolType.SETTINGS);
+      } else {
+        alert("請前往「系統設定」輸入您的 API Key。");
+      }
+      return;
+    }
     setIsLoading(true);
     setStrategyData(null);
     setExternalData(null);
@@ -183,6 +193,7 @@ ${parsedData.strategy.actions.map((action, i) => `  ${i + 1}. [${action.owner}] 
         description="AI 即時解構會議逐字稿，將對話轉換為「戰略作戰地圖」。"
         engine={model}
         isOperational={isOperational}
+        onStatusClick={onNavigate ? () => onNavigate(ToolType.SETTINGS) : undefined}
       />
 
       {/* Input Section */}
@@ -229,11 +240,11 @@ ${parsedData.strategy.actions.map((action, i) => `  ${i + 1}. [${action.owner}] 
                 w-full py-4 rounded-2xl flex items-center justify-center gap-2 font-black shadow-xl transition-all
                 ${isLoading || !transcript.trim()
                   ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                  : 'bg-slate-900 text-white hover:bg-indigo-600 hover:-translate-y-1 active:scale-95'}
+                  : apiKey ? 'bg-slate-900 text-white hover:bg-indigo-600 hover:-translate-y-1' : 'bg-amber-100 text-amber-600 hover:bg-amber-200 shadow-none'}
               `}
             >
-              {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Radar className="w-5 h-5" />}
-              {isLoading ? '正在進行戰略運算...' : '產出雙向會議紀錄'}
+              {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : !apiKey ? <AlertCircle className="w-5 h-5" /> : <Radar className="w-5 h-5" />}
+              {isLoading ? '正在進行戰略運算...' : !apiKey ? '尚未設定 API Key (點擊前往設定)' : '產出雙向會議紀錄'}
             </button>
           </div>
         </div>
